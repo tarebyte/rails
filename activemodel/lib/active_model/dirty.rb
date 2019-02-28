@@ -85,6 +85,7 @@ module ActiveModel
   #
   #   person.previous_changes         # => {"name" => [nil, "Bill"]}
   #   person.name_previously_changed? # => true
+  #   person.name_previously_changed?(from: nil, to: "Bob") # => true
   #   person.name_previous_change     # => [nil, "Bill"]
   #   person.reload!
   #   person.previous_changes         # => {}
@@ -184,8 +185,10 @@ module ActiveModel
     end
 
     # Handles <tt>*_previously_changed?</tt> for +method_missing+.
-    def attribute_previously_changed?(attr) #:nodoc:
-      previous_changes_include?(attr)
+    def attribute_previously_changed?(attr, from: OPTION_NOT_GIVEN, to: OPTION_NOT_GIVEN) #:nodoc:
+      !!previous_changes_include?(attr) &&
+        (to == OPTION_NOT_GIVEN || to == _read_attribute(attr)) &&
+        (from == OPTION_NOT_GIVEN || from == previously_changed_attributes[attr])
     end
 
     # Restore all previous data of the provided attributes.
